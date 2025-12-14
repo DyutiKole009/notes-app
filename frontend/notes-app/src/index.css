@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  html{
+    font-family: 'Poppins', sans-serif;
+  }
+
+  body {
+    background-color: white;
+    overflow-x: hidden ;
+  }
+}
+
+@layer components {
+
+  .input-box {
+    @apply w-full text-sm bg-transparent border-[1.5px] px-5 py-3 rounded mb-4 outline-none;
+  }
+  
+  .btn-primary {
+    @apply w-full text-sm bg-blue-500 text-white p-2 rounded my-1 hover:bg-blue-600;
+  }
+
+  .icon-btn{
+    @apply text-xl text-slate-300 cursor-pointer hover:text-blue-600;
+  }
+
+  .input-label{
+    @apply text-xs text-slate-400;
+  }
+
+.sidebar-item {
+  @apply w-full text-left px-2 py-2 rounded-lg transition text-black flex items-center;
+}
+
+.sidebar-item-hover {
+  @apply hover:bg-slate-500 hover:text-white;
+}
+
+.sidebar-subitem {
+  @apply w-full text-left px-2 py-1 text-sm transition text-black;
+}
+
+.sidebar-subitem-hover {
+  @apply hover:underline;
+}
+
+.sidebar-divider {
+  @apply my-2 border-t border-gray-400;
+}
+
+.react-calendar-heatmap .color-empty {
+  fill: #f8fafc;
+}
+
+.react-calendar-heatmap rect {
+  rx: 2;
+  ry: 2;
+}
+
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+}
+input[type="password"]::-webkit-textfield-decoration-container {
+    display: none !important;
+}
