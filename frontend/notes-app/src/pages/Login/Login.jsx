@@ -37,7 +37,7 @@ const Login = () => {
 
         if(response.data && response.data.accessToken){
             localStorage.setItem("token", response.data.accessToken)
-            window.location.replace("/dashboard");
+            navigate("/dashboard")
         }
         }
         catch(error){
