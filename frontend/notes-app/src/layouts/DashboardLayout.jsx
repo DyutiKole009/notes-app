@@ -5,7 +5,7 @@ import axiosInstance from "../utils/axiosInstance";
 import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 
-const DashboardLayout = () => {
+const DashboardLayout = ({ setIsLoggedIn }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notes, setNotes] = useState([]);
   const [isSearch, setIsSearch] = useState(false);
@@ -18,24 +18,22 @@ const DashboardLayout = () => {
 
   /* ---------------- GET USER ---------------- */
   useEffect(() => {
-    const fetchUser = async () => {
-      if (!token) return;
+    if (!token) return;
 
+    const fetchUser = async () => {
       try {
         const res = await axiosInstance.get("/get-user");
         setUserInfo(res.data.user);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-
       } catch (err) {
         console.error("Failed to fetch user", err);
-        localStorage.clear();
-        navigate("/login");
+        handleLogout(); // 🔥 force logout on token failure
       }
     };
 
     fetchUser();
-  }, [token, navigate]);
+  }, [token]);
 
+  /* ---------------- NOTES ---------------- */
   const getAllNotes = async () => {
     const res = await axiosInstance.get("/get-all-notes");
     setNotes(res.data.note || []);
@@ -58,10 +56,12 @@ const DashboardLayout = () => {
     if (token) getAllNotes();
   }, [token]);
 
-  const onLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
+  const handleLogout = () => {
+  localStorage.clear();      // storage
+  setIsLoggedIn(false);      // 🔥 React state (MANDATORY)
+  navigate("/login", { replace: true });
+};
+
 
   const isDashboard = location.pathname.includes("dashboard");
 
@@ -69,20 +69,20 @@ const DashboardLayout = () => {
     <>
       {token && (
         <Navbar
-        userInfo={userInfo}
-        onMenuClick={() => setSidebarOpen((p) => !p)}
-        showSearch={isDashboard}          // ✅ ADD THIS LINE
-        onSearchNote={onSearchNote}
-        handleClearSearch={handleClearSearch}
+          userInfo={userInfo}
+          onMenuClick={() => setSidebarOpen((p) => !p)}
+          showSearch={isDashboard}
+          onSearchNote={onSearchNote}
+          handleClearSearch={handleClearSearch}
+          setIsLoggedIn={setIsLoggedIn}   // 🔥 PASS DOWN
         />
-
       )}
 
       {token && (
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
-          onLogout={onLogout}
+          onLogout={handleLogout}
           navigate={navigate}
         />
       )}
