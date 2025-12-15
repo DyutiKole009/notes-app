@@ -1,99 +1,64 @@
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axiosInstance from "../utils/axiosInstance";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-import Navbar from "../components/Navbar/Navbar";
-import Sidebar from "../components/Sidebar/Sidebar";
+import DashboardLayout from "./layouts/DashboardLayout";
 
-const DashboardLayout = ({ setIsLoggedIn, isLoggedIn }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notes, setNotes] = useState([]);
-  const [isSearch, setIsSearch] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
+import Home from "./pages/Home/Home";
+import Insights from "./pages/Insights/Insights";
+import Recent from "./pages/Recent/Recent";
+import OCR from "./pages/AI/OCR";
+import VoiceNotes from "./pages/AI/VoiceNotes";
+import Login from "./pages/Login/Login";
+import SignUp from "./pages/SignUp/SignUp";
 
-  const navigate = useNavigate();
-  const location = useLocation();
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  /* 🔥 REAL ROUTE GUARD (REACTIVE) */
+  // Sync auth state once on load
   useEffect(() => {
-    if (!isLoggedIn) {
-      navigate("/login", { replace: true });
-    }
-  }, [isLoggedIn, navigate]);
-
-  /* ---------- LOGOUT ---------- */
-  const handleLogout = () => {
-    localStorage.clear();
-    setIsLoggedIn(false);   // 🔥 this triggers redirect above
-  };
-
-  /* ---------- GET USER ---------- */
-  useEffect(() => {
-    if (!isLoggedIn) return;
-
-    const fetchUser = async () => {
-      try {
-        const res = await axiosInstance.get("/get-user");
-        setUserInfo(res.data.user);
-      } catch (err) {
-        handleLogout(); // invalid token
-      }
-    };
-
-    fetchUser();
-  }, [isLoggedIn]);
-
-  /* ---------- NOTES ---------- */
-  const getAllNotes = async () => {
-    const res = await axiosInstance.get("/get-all-notes");
-    setNotes(res.data.note || []);
-  };
-
-  const onSearchNote = async (query) => {
-    const res = await axiosInstance.get("/search-notes", {
-      params: { query },
-    });
-    setIsSearch(true);
-    setNotes(res.data.notes || []);
-  };
-
-  const handleClearSearch = () => {
-    setIsSearch(false);
-    getAllNotes();
-  };
-
-  useEffect(() => {
-    if (isLoggedIn) getAllNotes();
-  }, [isLoggedIn]);
-
-  const isDashboard = location.pathname.includes("dashboard");
+    setIsLoggedIn(!!localStorage.getItem("token"));
+  }, []);
 
   return (
-    <>
-      {isLoggedIn && (
-        <Navbar
-          userInfo={userInfo}
-          onMenuClick={() => setSidebarOpen((p) => !p)}
-          showSearch={isDashboard}
-          onSearchNote={onSearchNote}
-          handleClearSearch={handleClearSearch}
-        />
-      )}
+    <Router>
+      <Routes>
 
-      {isLoggedIn && (
-        <Sidebar
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          onLogout={handleLogout}
-          navigate={navigate}
+        <Route
+          path="/login"
+          element={
+            isLoggedIn
+              ? <Navigate to="/dashboard" replace />
+              : <Login setIsLoggedIn={setIsLoggedIn} />
+          }
         />
-      )}
 
-      <div className="mt-20 px-6 md:px-10">
-        <Outlet context={{ notes, isSearch, refreshNotes: getAllNotes }} />
-      </div>
-    </>
+        <Route
+          path="/signup"
+          element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <SignUp />}
+        />
+
+        {/* 🔒 PROTECTED ROUTE */}
+        <Route
+          path="/"
+          element={
+            isLoggedIn
+              ? <DashboardLayout setIsLoggedIn={setIsLoggedIn} />
+              : <Navigate to="/login" replace />
+          }
+        >
+          <Route index element={<Navigate to="dashboard" />} />
+          <Route path="dashboard" element={<Home />} />
+          <Route path="recent" element={<Recent />} />
+          <Route path="insights" element={<Insights />} />
+          <Route path="ocr" element={<OCR />} />
+          <Route path="voice-notes" element={<VoiceNotes />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+
+      </Routes>
+    </Router>
   );
 };
 
-export default DashboardLayout;
+export default App;
