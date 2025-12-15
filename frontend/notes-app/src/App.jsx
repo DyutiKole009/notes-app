@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import DashboardLayout from "./layouts/DashboardLayout";
 
@@ -14,7 +19,7 @@ import SignUp from "./pages/SignUp/SignUp";
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Sync auth state once on load
+  // 🔐 single source of truth for auth
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem("token"));
   }, []);
@@ -23,21 +28,27 @@ const App = () => {
     <Router>
       <Routes>
 
+        {/* ---------- LOGIN ---------- */}
         <Route
           path="/login"
           element={
             isLoggedIn
-              ? <Navigate to="/dashboard" replace />
+              ? <Navigate to="/" replace />
               : <Login setIsLoggedIn={setIsLoggedIn} />
           }
         />
 
+        {/* ---------- SIGNUP ---------- */}
         <Route
           path="/signup"
-          element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <SignUp />}
+          element={
+            isLoggedIn
+              ? <Navigate to="/" replace />
+              : <SignUp />
+          }
         />
 
-        {/* 🔒 PROTECTED ROUTE */}
+        {/* ---------- PROTECTED ROOT ---------- */}
         <Route
           path="/"
           element={
@@ -46,7 +57,10 @@ const App = () => {
               : <Navigate to="/login" replace />
           }
         >
-          <Route index element={<Navigate to="dashboard" />} />
+          {/* default page */}
+          <Route index element={<Navigate to="dashboard" replace />} />
+
+          {/* dashboard pages */}
           <Route path="dashboard" element={<Home />} />
           <Route path="recent" element={<Recent />} />
           <Route path="insights" element={<Insights />} />
@@ -54,6 +68,7 @@ const App = () => {
           <Route path="voice-notes" element={<VoiceNotes />} />
         </Route>
 
+        {/* ---------- FALLBACK ---------- */}
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
